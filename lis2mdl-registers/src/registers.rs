@@ -182,7 +182,7 @@ pub struct CfgRegB {
 
     /// Set pulse frequency.
     ///
-    /// * `false`: the set pulse is released every 63 ODR cycles.
+    /// * `false`: the set pulse is released every 64 ODR cycles.
     /// * `true`: the set pulse is released only at power-on after power-down.
     #[bits(1, access = RW)]
     pub set_freq: bool,
@@ -207,7 +207,7 @@ writable_register!(CfgRegB, RegisterAddress::CFG_REG_B);
 #[derive(PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct CfgRegC {
-    /// Drives the data-ready signal on the INT/DRDY pin.
+    /// Drives the data-ready signal ([`StatusReg::zyxda`]) on the INT/DRDY pin (push-pull).
     #[bits(1, access = RW)]
     pub drdy_on_pin: bool,
 
@@ -215,15 +215,17 @@ pub struct CfgRegC {
     #[bits(1, access = RW)]
     pub self_test: bool,
 
-    /// Enables the 4-wire SPI interface.
+    /// Enables the SDO line on pin 7 (4-wire SPI). This disables the interrupt and data-ready
+    /// signals on the pin.
     #[bits(1, access = RW)]
     pub four_wire_spi: bool,
 
-    /// Big/little endian data selection. If `true`, the high and low data bytes are swapped.
+    /// If `true`, the low and high bytes of the data are swapped.
     #[bits(1, access = RW)]
     pub ble: bool,
 
-    /// Block data update. If `true`, output registers are not updated until both bytes are read.
+    /// Block data update. If `true`, the low and high bytes of an output register are not updated
+    /// separately, which avoids reading incoherent values during asynchronous reads.
     #[bits(1, access = RW)]
     pub bdu: bool,
 
@@ -231,7 +233,7 @@ pub struct CfgRegC {
     #[bits(1, access = RW)]
     pub i2c_dis: bool,
 
-    /// Drives the interrupt signal on the INT/DRDY pin.
+    /// Drives the interrupt signal ([`IntSourceReg::int`]) on the INT/DRDY pin (push-pull).
     #[bits(1, access = RW)]
     pub int_on_pin: bool,
 
@@ -250,11 +252,14 @@ pub struct IntCtrlReg {
     #[bits(1, access = RW)]
     pub ien: bool,
 
-    /// Latches the interrupt until [`IntSourceReg`] is read. If `false`, the interrupt is pulsed.
+    /// Latches [`IntSourceReg::int`] until [`IntSourceReg`] is read. If `false`, it is pulsed.
     #[bits(1, access = RW)]
     pub iel: bool,
 
-    /// Interrupt polarity. If `true`, the interrupt is active high.
+    /// Polarity of [`IntSourceReg::int`] (and the INT/DRDY pin).
+    ///
+    /// * `false`: `INT = 0` signals an interrupt.
+    /// * `true`: `INT = 1` signals an interrupt.
     #[bits(1, access = RW)]
     pub iea: bool,
 
@@ -277,15 +282,17 @@ pub struct IntCtrlReg {
 writable_register!(IntCtrlReg, RegisterAddress::INT_CRTL_REG);
 
 /// [`INT_SOURCE_REG`](RegisterAddress::INT_SOURCE_REG) (64h): interrupt source.
+///
+/// When the interrupt is latched ([`IntCtrlReg::iel`]), reading this register resets all bits.
 #[bitfield(u8)]
 #[derive(PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct IntSourceReg {
-    /// An interrupt event occurred.
+    /// Signals an interrupt event, with the polarity set by [`IntCtrlReg::iea`].
     #[bits(1, access = RO)]
     pub int: bool,
 
-    /// Internal measurement range overflow. Reset by reading this register.
+    /// Internal measurement range overflow. Always enabled; reset by reading this register.
     #[bits(1, access = RO)]
     pub mroi: bool,
 
@@ -319,7 +326,8 @@ readable_register!(IntSourceReg, RegisterAddress::INT_SOURCE_REG);
 byte_register!(
     /// [`INT_THS_L_REG`](RegisterAddress::INT_THS_L_REG) (65h): interrupt threshold, low byte.
     ///
-    /// The threshold is an unsigned 15-bit value at 1.5 mG/LSB and applies to all axes.
+    /// The threshold is an unsigned 16-bit value at 1.5 mG/LSB. It applies to all axes as an
+    /// absolute value: crossings are detected on both the positive and the negative side.
     IntThsL, RegisterAddress::INT_THS_L_REG, RW, writable_register
 );
 byte_register!(

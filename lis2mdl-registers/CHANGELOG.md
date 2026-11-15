@@ -7,4 +7,4 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
-- Register map following the LIS2MDL datasheet (DS12144).
+- Register map following the LIS2MDL datasheet (DS12144 Rev 6), with I²C and SPI register traits.
