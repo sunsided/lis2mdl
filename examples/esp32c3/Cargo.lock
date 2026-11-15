@@ -77,21 +77,21 @@ checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
 
 [[package]]
 name = "coordinate-frame"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a5a087e6a85cf78e0312d816c08fc54594281bd1a3defb21725c048694ed8b8"
+checksum = "8ea18409d0cf7ef694614e3d95c4f9ab789d697879a4c4d1c00ffe3fc3d686c3"
 dependencies = [
  "coordinate-frame-derive",
 ]
 
 [[package]]
 name = "coordinate-frame-derive"
-version = "0.5.0"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "949cdec1621d3982d7e28ee8edc847c42b16a9dd56860ab47d58cdaa7d2377e5"
+checksum = "55f852d692530355e95aad05bd310150760f8be201ca6cea1ff9c168a3445c4b"
 dependencies = [
  "quote",
- "syn 2.0.119",
+ "syn 3.0.10",
 ]
 
 [[package]]
