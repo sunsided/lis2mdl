@@ -24,10 +24,15 @@ impl<'a> FakeI2c<'a> {
         if address != model.address() {
             return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Address));
         }
+        // Adjacent operations of the same type form one transfer, without a repeated start.
+        let mut previous_is_read = None;
         for operation in operations {
+            let is_read = matches!(operation, Operation::Read(_));
+            let restart = previous_is_read != Some(is_read);
+            previous_is_read = Some(is_read);
             match operation {
                 Operation::Write(bytes) => {
-                    if !model.i2c_start(false) {
+                    if restart && !model.i2c_start(false) {
                         return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Address));
                     }
                     if !bytes.iter().all(|&b| model.i2c_write(b)) {
@@ -35,7 +40,7 @@ impl<'a> FakeI2c<'a> {
                     }
                 }
                 Operation::Read(buffer) => {
-                    if !model.i2c_start(true) {
+                    if restart && !model.i2c_start(true) {
                         return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Address));
                     }
                     buffer.iter_mut().for_each(|b| *b = model.i2c_read());
@@ -107,5 +112,19 @@ mod tests {
         ))
         .unwrap();
         assert_eq!(id, [0x40]);
+    }
+
+    #[test]
+    fn adjacent_writes_form_one_transfer() {
+        let model = RefCell::new(Lis2mdlModel::new());
+        let mut bus = FakeI2c::new(&model);
+        bus.transaction(
+            0x1E,
+            &mut [Operation::Write(&[0x45]), Operation::Write(&[7, 8])],
+        )
+        .unwrap();
+        let mut offset = [0; 2];
+        bus.write_read(0x1E, &[0x45], &mut offset).unwrap();
+        assert_eq!(offset, [7, 8]);
     }
 }
