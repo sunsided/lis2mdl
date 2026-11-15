@@ -16,9 +16,10 @@ release = false
 workspace = true
 
 [dependencies]
+fake-bus.workspace = true
 lis2mdl-registers.workspace = true
-embedded-hal.workspace = true
-embedded-hal-async.workspace = true
 
 [dev-dependencies]
 embassy-futures.workspace = true
+embedded-hal.workspace = true
+embedded-hal-async.workspace = true

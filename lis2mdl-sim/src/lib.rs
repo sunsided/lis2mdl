@@ -42,13 +42,9 @@
 #![forbid(unsafe_code)]
 #![deny(missing_docs)]
 
-mod fake_delay;
-mod fake_i2c;
-mod fake_spi;
+mod bus;
 
-pub use fake_delay::FakeDelay;
-pub use fake_i2c::FakeI2c;
-pub use fake_spi::FakeSpi;
+pub use bus::{FakeDelay, FakeI2c, FakeSpi};
 
 use lis2mdl_registers::{
     CfgRegA, CfgRegB, CfgRegC, DEFAULT_DEVICE_ADDRESS, IntCtrlReg, IntSourceReg, LIS2MDL_WHO_AM_I,
@@ -98,6 +94,8 @@ pub struct Lis2mdlModel {
     temperature: i16,
     /// Time since the last sample in continuous mode.
     elapsed_us: u32,
+    /// Nanoseconds not yet passed to [`Self::tick`], which works in whole microseconds.
+    pending_ns: u64,
     spi: SpiState,
 }
 
@@ -117,6 +115,7 @@ impl Lis2mdlModel {
             field: [0; 3],
             temperature: 0,
             elapsed_us: 0,
+            pending_ns: 0,
             spi: SpiState::Command,
         };
 
