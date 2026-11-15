@@ -76,9 +76,8 @@ impl From<RegisterAddress> for u8 {
 macro_rules! byte_register {
     ($(#[$meta:meta])* $type:ident, $addr:expr, $access:ident, $macro:ident) => {
         $(#[$meta])*
-        #[bitfield(u8)]
+        #[bitfield(u8, defmt = cfg(feature = "defmt"))]
         #[derive(PartialEq, Eq)]
-        #[cfg_attr(feature = "defmt", derive(defmt::Format))]
         pub struct $type {
             /// The register value.
             #[bits(8, access = $access)]
@@ -118,9 +117,8 @@ byte_register!(
 );
 
 /// [`WHO_AM_I`](RegisterAddress::WHO_AM_I) (4Fh)
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct WhoAmI {
     /// The identification value. Always [`LIS2MDL_WHO_AM_I`](crate::LIS2MDL_WHO_AM_I).
     #[bits(8, access = RO, default = crate::LIS2MDL_WHO_AM_I)]
@@ -130,9 +128,8 @@ pub struct WhoAmI {
 readable_register!(WhoAmI, RegisterAddress::WHO_AM_I);
 
 /// [`CFG_REG_A`](RegisterAddress::CFG_REG_A) (60h): mode, output data rate, power mode, reset.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct CfgRegA {
     /// Mode of operation. Defaults to [`Mode::Idle`].
     #[bits(2, access = RW, default = Mode::Idle)]
@@ -165,9 +162,8 @@ pub struct CfgRegA {
 writable_register!(CfgRegA, RegisterAddress::CFG_REG_A);
 
 /// [`CFG_REG_B`](RegisterAddress::CFG_REG_B) (61h): low-pass filter, offset cancellation.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct CfgRegB {
     /// Digital low-pass filter.
     ///
@@ -203,9 +199,8 @@ pub struct CfgRegB {
 writable_register!(CfgRegB, RegisterAddress::CFG_REG_B);
 
 /// [`CFG_REG_C`](RegisterAddress::CFG_REG_C) (62h): interface, data update and pin configuration.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct CfgRegC {
     /// Drives the data-ready signal ([`StatusReg::zyxda`]) on the INT/DRDY pin (push-pull).
     #[bits(1, access = RW)]
@@ -244,9 +239,8 @@ pub struct CfgRegC {
 writable_register!(CfgRegC, RegisterAddress::CFG_REG_C);
 
 /// [`INT_CRTL_REG`](RegisterAddress::INT_CRTL_REG) (63h): interrupt configuration.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct IntCtrlReg {
     /// Enables interrupt generation.
     #[bits(1, access = RW)]
@@ -284,9 +278,8 @@ writable_register!(IntCtrlReg, RegisterAddress::INT_CRTL_REG);
 /// [`INT_SOURCE_REG`](RegisterAddress::INT_SOURCE_REG) (64h): interrupt source.
 ///
 /// When the interrupt is latched ([`IntCtrlReg::iel`]), reading this register resets all bits.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct IntSourceReg {
     /// Signals an interrupt event, with the polarity set by [`IntCtrlReg::iea`].
     #[bits(1, access = RO)]
@@ -336,9 +329,8 @@ byte_register!(
 );
 
 /// [`STATUS_REG`](RegisterAddress::STATUS_REG) (67h): data status.
-#[bitfield(u8)]
+#[bitfield(u8, defmt = cfg(feature = "defmt"))]
 #[derive(PartialEq, Eq)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct StatusReg {
     /// New X data is available.
     #[bits(1, access = RO)]
