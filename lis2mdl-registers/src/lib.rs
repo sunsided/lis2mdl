@@ -26,8 +26,12 @@ pub mod prelude {
     pub use hardware_registers::i2c::*;
     pub use hardware_registers::register_address::RegisterAddress8;
     pub use hardware_registers::sizes::R1;
-    pub use hardware_registers::spi::{SPIRegister, SPIRegister8, WritableSPIRegister8};
-    pub use hardware_registers::{FromBits, HardwareRegister, ToBits, WritableHardwareRegister};
+    pub use hardware_registers::spi::{
+        ReadableSPIRegister8, SPIRegister, SPIRegister8, WritableSPIRegister8,
+    };
+    pub use hardware_registers::{
+        FromBits, HardwareRegister, ToBits, TryFromBits, WritableHardwareRegister,
+    };
 }
 
 macro_rules! readable_register {
@@ -122,8 +126,13 @@ pub const TEMPERATURE_LSB_PER_CELSIUS: f32 = 8.0;
 /// The temperature at which the temperature registers read `0`, in °C.
 pub const TEMPERATURE_OFFSET_CELSIUS: f32 = 25.0;
 
-/// A magnetometer register.
-pub trait Register: prelude::I2CRegister8<prelude::DeviceAddress7> + From<u8> + Into<u8> {}
+/// A readable magnetometer register.
+///
+/// Every LIS2MDL register is readable, and every bit pattern decodes, so reading is infallible.
+pub trait Register:
+    prelude::ReadableI2CRegister8<prelude::DeviceAddress7> + prelude::FromBits<u8> + From<u8> + Into<u8>
+{
+}
 
 /// A writable magnetometer register.
 pub trait WritableRegister:
