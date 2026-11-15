@@ -13,19 +13,21 @@ rust-version.workspace = true
 
 [features]
 async = ["dep:embedded-hal-async"]
-defmt = ["dep:defmt", "lis2mdl-registers/defmt"]
+coordinate-frame = ["dep:coordinate-frame"]
+defmt = ["dep:defmt", "lis2mdl-registers/defmt", "coordinate-frame?/defmt"]
 
 [lints]
 workspace = true
 
 [dependencies]
 lis2mdl-registers.workspace = true
+coordinate-frame = { workspace = true, optional = true }
 defmt = { workspace = true, optional = true }
 embedded-hal.workspace = true
 embedded-hal-async = { workspace = true, optional = true }
 
 [dev-dependencies]
-coordinate-frame = "0.5.0"
+coordinate-frame.workspace = true
 embedded-hal.workspace = true
 lis2mdl-sim.workspace = true
 embassy-futures.workspace = true

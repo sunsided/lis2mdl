@@ -109,6 +109,37 @@ pub use self_test::{
     SELF_TEST_MAX_MILLIGAUSS, SELF_TEST_MIN_MILLIGAUSS, SELF_TEST_SAMPLES, SelfTest, SelfTestError,
 };
 
+/// A vector in the sensor's own axes, as a [`coordinate_frame`] type.
+///
+/// The LIS2MDL datasheet (DS12144 Rev 6, section 1.2, figure 2 "Pin connections", page 3)
+/// draws +Z out of the top face, +X and +Y in the package plane. Seen from above, +Y lies
+/// 90° clockwise of +X, so the axes form a **left-handed** set. With +Z as Up, this is
+/// [`NorthEastUp`](coordinate_frame::NorthEastUp): X = North, Y = East, Z = Up.
+///
+/// Convert a reading with [`From<[T; 3]>`](From), then into your board frame with `.into()`:
+///
+/// ```
+/// # use core::cell::RefCell;
+/// # use lis2mdl_sim::{FakeI2c, Lis2mdlModel};
+/// use coordinate_frame::NorthEastDown;
+/// use lis2mdl::{Lis2mdl, OutputDataRate, SensorFrame};
+/// # let model = RefCell::new(Lis2mdlModel::new());
+/// # model.borrow_mut().set_field(200, 100, -300);
+/// # let i2c = FakeI2c::new(&model);
+///
+/// let mut mag = Lis2mdl::new(i2c);
+/// mag.start_continuous(OutputDataRate::Hz50)?;
+/// # model.borrow_mut().tick(20_000);
+///
+/// let field = SensorFrame::from(mag.read_magnetic_field()?.microtesla());
+/// let ned: NorthEastDown<f32> = field.into();
+/// assert_eq!((ned.north(), ned.east(), ned.down()), (30.0, 15.0, 45.0));
+/// # Ok::<(), embedded_hal::i2c::ErrorKind>(())
+/// ```
+#[cfg(feature = "coordinate-frame")]
+#[cfg_attr(docsrs, doc(cfg(feature = "coordinate-frame")))]
+pub type SensorFrame<T> = coordinate_frame::NorthEastUp<T>;
+
 use embedded_hal::delay::DelayNs;
 use lis2mdl_registers::prelude::*;
 use lis2mdl_registers::{

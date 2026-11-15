@@ -7,6 +7,8 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- `coordinate-frame` feature with the `SensorFrame` alias, the sensor's axes as
+  `coordinate_frame::NorthEastUp` (left-handed, DS12144 Rev 6 figure 2).
 - Documentation on converting the sensor axes into world frames with `coordinate-frame`.
 
 ## [0.2.0] - 2026-11-15
