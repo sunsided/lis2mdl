@@ -43,6 +43,14 @@ tasks:
       - cargo test --workspace --all-features
       - cargo test --workspace --no-default-features
 
+  coverage:
+    desc: Measure test coverage and open the HTML report
+    preconditions:
+      - sh: command -v cargo-llvm-cov
+        msg: "cargo-llvm-cov not found — cargo install cargo-llvm-cov (needs: rustup component add llvm-tools)"
+    cmds:
+      - cargo llvm-cov --workspace --all-features --open
+
   fmt:
     desc: Format all sources
     aliases: [format]

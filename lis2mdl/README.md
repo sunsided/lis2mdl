@@ -3,6 +3,7 @@
 [![Crates.io][crates-image]][crates-link]
 [![Docs][docs-image]][docs-link]
 [![Build Status][build-image]][build-link]
+[![Coverage][codecov-image]][codecov-link]
 [![Safety Dance][safety-image]][safety-link]
 ![MSRV][msrv-image]
 [![EUPL 1.2 licensed][license-eupl-image]][license-eupl-link]
@@ -62,6 +63,8 @@ Triple licensed under your choice of either of:
 [docs-link]: https://docs.rs/lis2mdl/
 [build-image]: https://github.com/sunsided/lis2mdl/workflows/Rust/badge.svg
 [build-link]: https://github.com/sunsided/lis2mdl/actions
+[codecov-image]: https://codecov.io/gh/sunsided/lis2mdl/graph/badge.svg
+[codecov-link]: https://codecov.io/gh/sunsided/lis2mdl
 [safety-image]: https://img.shields.io/badge/unsafe-forbidden-success.svg
 [safety-link]: https://github.com/rust-secure-code/safety-dance/
 [msrv-image]: https://img.shields.io/badge/rustc-1.85+-blue.svg

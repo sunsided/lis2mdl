@@ -122,6 +122,35 @@ jobs:
       - name: Build
         run: cargo build -p lis2mdl-registers -p lis2mdl --all-features --target "$TARGET"
 
+  coverage:
+    name: Coverage
+    needs:
+      - lint
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read # check out the repository
+      id-token: write # authenticate the Codecov upload via OIDC, without a token
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install llvm-tools
+        run: rustup component add llvm-tools
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@ab49d3c64680143e184118bed66a46419fc15519 # v2.90.5
+        with:
+          tool: cargo-llvm-cov
+      - name: Collect coverage
+        run: cargo llvm-cov --workspace --all-features --lcov --output-path lcov.info
+      - name: Upload to Codecov
+        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5 # v7.1.1
+        with:
+          files: lcov.info
+          disable_search: true
+          use_oidc: true
+          # Pull requests from forks get no OIDC token; don't fail them for that.
+          fail_ci_if_error: ${{ github.event_name != 'pull_request' }}
+
   wokwi:
     name: Wokwi simulation (ESP32-C3)
     needs:
