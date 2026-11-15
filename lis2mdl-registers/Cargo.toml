@@ -24,10 +24,9 @@ defmt = { workspace = true, optional = true }
 hardware-registers.workspace = true
 
 [package.metadata.release]
-# The workspace tag is created by the lis2mdl crate.
 tag = false
 pre-release-replacements = [
-    { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}", exactly = 1 },
+    { file = "CHANGELOG.md", search = "## \\[Unreleased\\]", replace = "## [Unreleased]\n\n## [{{version}}] - {{date}}\n\n[{{version}}]: https://github.com/sunsided/lis2mdl/releases/tag/v{{version}}", exactly = 1 },
 ]
 
 [package.metadata.docs.rs]

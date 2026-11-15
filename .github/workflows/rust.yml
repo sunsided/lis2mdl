@@ -10,28 +10,56 @@ on:
     branches:
       - main
 
+# Read-only by default; no job needs more.
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  workflows:
+    name: Lint workflows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: actionlint
+        run: |
+          bash <(curl -sSfL https://raw.githubusercontent.com/rhysd/actionlint/914e7df21a07ef503a81201c76d2b11c789d3fca/scripts/download-actionlint.bash) 1.7.12
+          ./actionlint -color
+      - name: zizmor
+        uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+        with:
+          advanced-security: false
+
   codespell:
     name: Check for spelling mistakes
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Codespell
-        uses: codespell-project/actions-codespell@v2
+        uses: codespell-project/actions-codespell@e3258cca84ce02b0bb36a3d41f2c18f719a0cc1a # v2.4.3
 
   lint:
     name: Lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Check format
         run: cargo fmt --all --check
       - name: Clippy
-        run: cargo clippy --workspace --all-features -- -D warnings
+        run: cargo clippy --workspace --all-targets --all-features -- -D warnings
 
   docs:
     name: Build documentation
@@ -40,8 +68,12 @@ jobs:
       - lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build documentation
+        env:
+          RUSTDOCFLAGS: -D warnings
         run: cargo doc --workspace --all-features --no-deps
 
   build-linux:
@@ -51,15 +83,25 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        features: [ [ ], [ "--all-features" ], [ "--no-default-features" ] ]
+        features: [ "", "--all-features", "--no-default-features" ]
+    env:
+      FEATURES: ${{ matrix.features }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Build
-        run: cargo build --workspace --verbose ${{ join(matrix.features, ' ') }}
+        run: |
+          # shellcheck disable=SC2086 # FEATURES is empty or a single flag.
+          cargo build --workspace --verbose $FEATURES
       - name: Run doctests
-        run: cargo test --workspace --doc --verbose ${{ join(matrix.features, ' ') }}
+        run: |
+          # shellcheck disable=SC2086 # FEATURES is empty or a single flag.
+          cargo test --workspace --doc --verbose $FEATURES
       - name: Run regular tests
-        run: cargo test --workspace --tests --verbose ${{ join(matrix.features, ' ') }}
+        run: |
+          # shellcheck disable=SC2086 # FEATURES is empty or a single flag.
+          cargo test --workspace --tests --verbose $FEATURES
 
   build-embedded:
     name: Build for embedded targets
@@ -69,26 +111,29 @@ jobs:
     strategy:
       matrix:
         target: [ thumbv7em-none-eabihf, riscv32imc-unknown-none-elf ]
+    env:
+      TARGET: ${{ matrix.target }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - name: Install target
-        run: rustup target add ${{ matrix.target }}
+        run: rustup target add "$TARGET"
       - name: Build
-        run: cargo build -p lis2mdl-registers -p lis2mdl --all-features --target ${{ matrix.target }}
+        run: cargo build -p lis2mdl-registers -p lis2mdl --all-features --target "$TARGET"
 
   wokwi:
     name: Wokwi simulation (ESP32-C3)
     needs:
       - build-linux
     runs-on: ubuntu-latest
-    env:
-      WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+    environment: wokwi
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          targets: wasm32-unknown-unknown, riscv32imc-unknown-none-elf
-          components: clippy, rustfmt
+          persist-credentials: false
+      - name: Install targets
+        run: rustup target add wasm32-unknown-unknown riscv32imc-unknown-none-elf
       - name: Lint chip and firmware
         run: |
           (cd sim/wokwi-chip && cargo fmt --check && cargo clippy --release -- -D warnings)
@@ -98,9 +143,14 @@ jobs:
       - name: Build firmware
         working-directory: examples/esp32c3
         run: cargo build --release
+      - name: Check for Wokwi token
+        id: token
+        env:
+          WOKWI_CLI_TOKEN: ${{ secrets.WOKWI_CLI_TOKEN }}
+        run: echo "present=${WOKWI_CLI_TOKEN:+true}" >> "$GITHUB_OUTPUT"
       - name: Run scenario
-        if: env.WOKWI_CLI_TOKEN != ''
-        uses: wokwi/wokwi-ci-action@v1
+        if: steps.token.outputs.present == 'true'
+        uses: wokwi/wokwi-ci-action@09e807a07e05b6f2498e43e3fb7ffcf38c277af7 # v1.3.0
         with:
           token: ${{ secrets.WOKWI_CLI_TOKEN }}
           path: examples/esp32c3

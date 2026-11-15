@@ -154,11 +154,11 @@ tasks:
       - cargo release {{.LEVEL}} --workspace
 
   release:
-    desc: Release, publish to crates.io and push the vX.Y.Z tag, which creates the GitHub Release
+    desc: Bump, commit, tag and push vX.Y.Z; CI then publishes to crates.io and creates the GitHub Release
     requires:
       vars: [LEVEL]
     preconditions: *cargo-release
-    prompt: "This publishes the crates to crates.io and pushes a release tag. Continue?"
+    prompt: "This pushes a release tag, which publishes the crates to crates.io. Continue?"
     cmds:
       - cargo release {{.LEVEL}} --workspace --execute
 
