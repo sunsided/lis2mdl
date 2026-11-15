@@ -1,0 +1,70 @@
+# https://taskfile.dev
+# ESP32-C3 example firmware. Runs standalone from this directory, or from the repository
+# root as esp32c3:*. The Wokwi tasks need the chip from sim/wokwi-chip (task chip:build).
+version: '3'
+
+vars:
+  CHIP: ../../sim/wokwi-chip/lis2mdl.chip.wasm
+  SCENARIO: scenarios/compass.yaml
+
+tasks:
+  default:
+    cmds:
+      - task --list --sort=none
+    silent: true
+
+  build:
+    desc: Build the firmware (release)
+    preconditions: &firmware
+      - sh: command -v cargo
+        msg: "cargo not found — install Rust from https://rustup.rs/"
+      - sh: rustup target list --installed | grep -qx riscv32imc-unknown-none-elf
+        msg: "RISC-V target missing — rustup target add riscv32imc-unknown-none-elf"
+    cmds:
+      - cargo build --release
+
+  run:
+    desc: Flash the firmware to a connected ESP32-C3 and open the serial monitor
+    preconditions:
+      - sh: command -v espflash
+        msg: "espflash not found — cargo install espflash"
+    cmds:
+      - cargo run --release
+
+  fmt:
+    desc: Format the firmware sources
+    preconditions: *firmware
+    cmds:
+      - cargo fmt
+
+  lint:
+    desc: Check formatting and run clippy with warnings as errors
+    preconditions: *firmware
+    cmds:
+      - cargo fmt --check
+      - cargo clippy --release -- -D warnings
+
+  wokwi:
+    desc: Run the firmware in Wokwi and show the serial output (pass wokwi-cli args after --)
+    deps: [build]
+    preconditions: &wokwi
+      - sh: command -v wokwi-cli
+        msg: "wokwi-cli not found — see https://docs.wokwi.com/wokwi-ci/cli-installation"
+      - sh: test -n "$WOKWI_CLI_TOKEN"
+        msg: "WOKWI_CLI_TOKEN not set — get a token at https://wokwi.com/dashboard/ci"
+      - sh: test -f {{.CHIP}}
+        msg: "Wokwi chip not built — run: task chip:build (from the repository root)"
+    cmds:
+      - wokwi-cli . {{.CLI_ARGS}}
+
+  wokwi:test:
+    desc: Run the firmware in Wokwi with the automation scenario
+    deps: [build]
+    preconditions: *wokwi
+    cmds:
+      - wokwi-cli . --scenario {{.SCENARIO}} --timeout 30000
+
+  clean:
+    desc: Remove build artifacts
+    cmds:
+      - cargo clean

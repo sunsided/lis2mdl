@@ -4,7 +4,7 @@ Wraps the [`lis2mdl-sim`](../../lis2mdl-sim) behavioral model into a
 [Wokwi custom chip](https://docs.wokwi.com/chips-api/getting-started).
 
 ```sh
-./build.sh   # produces lis2mdl.chip.wasm next to lis2mdl.chip.json
+task build   # or ./build.sh; produces lis2mdl.chip.wasm next to lis2mdl.chip.json
 ```
 
 Reference it from a project's `wokwi.toml`:
