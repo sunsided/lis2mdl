@@ -6,6 +6,7 @@
 #![no_std]
 #![no_main]
 
+use coordinate_frame::NorthEastDown;
 use esp_backtrace as _;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Input, InputConfig, Pull};
@@ -24,10 +25,18 @@ const HARD_IRON_OFFSET_MG: (f32, f32, f32) = (15.0, 0.0, 0.0);
 /// The threshold interrupt fires when any axis exceeds ±1 gauss.
 const THRESHOLD_MG: f32 = 1000.0;
 
-/// The heading in degrees (0–360), with X pointing north and the sensor held flat.
+/// How the chip is mounted on the board: its X, Y and Z axes named in world terms.
+///
+/// Here X points north, Y east and Z down. For another mounting, change the type, e.g. to
+/// `NorthWestUp<f32>` for X north, Y west, Z up.
+type Mounting = NorthEastDown<f32>;
+
+/// The heading in degrees (0–360) clockwise from magnetic north, for a level board.
 fn heading(field: &MagneticField) -> f32 {
-    let [x, y, _] = field.milligauss();
-    let degrees = libm::atan2f(y, x).to_degrees();
+    let [x, y, z] = field.milligauss();
+    let ned = Mounting::new(x, y, z).to_ned();
+    let degrees = libm::atan2f(ned.east(), ned.north()).to_degrees();
+
     if degrees < 0.0 {
         degrees + 360.0
     } else {

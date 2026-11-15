@@ -76,6 +76,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e7648175b45a9a48536d676f68d918270699102aa8dab5496df06904c914600"
 
 [[package]]
+name = "coordinate-frame"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7a5a087e6a85cf78e0312d816c08fc54594281bd1a3defb21725c048694ed8b8"
+dependencies = [
+ "coordinate-frame-derive",
+]
+
+[[package]]
+name = "coordinate-frame-derive"
+version = "0.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "949cdec1621d3982d7e28ee8edc847c42b16a9dd56860ab47d58cdaa7d2377e5"
+dependencies = [
+ "quote",
+ "syn 2.0.119",
+]
+
+[[package]]
 name = "cpufeatures"
 version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -905,6 +924,7 @@ dependencies = [
 name = "lis2mdl-example-esp32c3"
 version = "0.1.0"
 dependencies = [
+ "coordinate-frame",
  "esp-backtrace",
  "esp-bootloader-esp-idf",
  "esp-hal",

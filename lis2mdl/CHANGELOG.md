@@ -5,6 +5,10 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- Documentation on converting the sensor axes into world frames with `coordinate-frame`.
+
 ## [0.2.0] - 2026-11-15
 
 [0.2.0]: https://github.com/sunsided/lis2mdl/releases/tag/v0.2.0

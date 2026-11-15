@@ -4,6 +4,9 @@ Reads a LIS2MDL with the blocking `lis2mdl` driver: runs the self-test, sets a h
 offset and a ±1 gauss threshold interrupt, then prints field, heading and temperature
 whenever they change, and the interrupt source when INT rises.
 
+The heading assumes the chip is mounted with X north, Y east and Z down, and the board is
+level. To change the mounting, change the `Mounting` type in `src/main.rs`.
+
 | ESP32-C3 | LIS2MDL  |
 |----------|----------|
 | GPIO4    | SDA      |
