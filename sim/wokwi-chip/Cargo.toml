@@ -1,0 +1,18 @@
+[package]
+name = "lis2mdl-wokwi-chip"
+description = "Wokwi custom chip wrapping the lis2mdl-sim behavioral model"
+version = "0.1.0"
+license = "EUPL-1.2 OR MIT OR Apache-2.0"
+edition = "2024"
+publish = false
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+lis2mdl-sim = { path = "../../lis2mdl-sim" }
+wokwi_chip_ll = "0.2.0"
+
+[profile.release]
+opt-level = "s"
+lto = true
