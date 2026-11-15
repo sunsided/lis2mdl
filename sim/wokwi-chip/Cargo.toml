@@ -9,6 +9,10 @@ publish = false
 [lib]
 crate-type = ["cdylib"]
 
+[lints.clippy]
+# Modules live in `folder.rs` plus `folder/`, never in `folder/mod.rs`.
+mod_module_files = "deny"
+
 [dependencies]
 lis2mdl-sim = { path = "../../lis2mdl-sim" }
 wokwi_chip_ll = "0.2.0"

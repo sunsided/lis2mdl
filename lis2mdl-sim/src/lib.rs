@@ -119,6 +119,7 @@ impl Lis2mdlModel {
             elapsed_us: 0,
             spi: SpiState::Command,
         };
+
         model.power_on();
         model
     }
@@ -135,6 +136,7 @@ impl Lis2mdlModel {
         for &reg in WRITABLE {
             self.set(reg, 0);
         }
+
         self.set(Reg::CFG_REG_A, CfgRegA::new().into());
         self.set(Reg::INT_CRTL_REG, IntCtrlReg::new().into());
         self.set(Reg::STATUS_REG, 0);
@@ -195,6 +197,7 @@ impl Lis2mdlModel {
         if self.mode() != Mode::Continuous {
             return;
         }
+
         let period_us = 1_000_000 / u32::from(self.cfg_a().odr().hz());
         self.elapsed_us = self.elapsed_us.saturating_add(us);
         while self.elapsed_us >= period_us {
@@ -223,6 +226,7 @@ impl Lis2mdlModel {
         } else {
             value.to_le_bytes()
         };
+
         self.regs[addr..addr + 2].copy_from_slice(&bytes);
     }
 
@@ -234,6 +238,7 @@ impl Lis2mdlModel {
         } else {
             0
         };
+
         let offsets = [
             Reg::OFFSET_X_REG_L,
             Reg::OFFSET_Y_REG_L,
@@ -247,6 +252,7 @@ impl Lis2mdlModel {
             corrected[axis] = raw[axis].saturating_sub(self.get_i16(offsets[axis]));
             self.set_i16(outputs[axis], corrected[axis], cfg_c.ble());
         }
+
         self.set_i16(Reg::TEMP_OUT_L_REG, self.temperature, cfg_c.ble());
 
         let status = StatusReg::from(self.register(Reg::STATUS_REG));
@@ -259,6 +265,7 @@ impl Lis2mdlModel {
         } else {
             raw
         };
+
         self.update_interrupt(data);
     }
 
@@ -269,6 +276,7 @@ impl Lis2mdlModel {
             self.set(Reg::INT_SOURCE_REG, 0);
             return;
         }
+
         let threshold = i32::from(self.get_i16(Reg::INT_THS_L_REG) as u16);
         let enabled = [ctrl.xien(), ctrl.yien(), ctrl.zien()];
         // Positive flags in bits 7..5 (X, Y, Z), negative flags in bits 4..2.
@@ -278,13 +286,16 @@ impl Lis2mdlModel {
             if enabled[axis] && value > threshold {
                 flags |= 0x80 >> axis;
             }
+
             if enabled[axis] && value < -threshold {
                 flags |= 0x10 >> axis;
             }
         }
+
         if flags != 0 {
             flags |= 0x01;
         }
+
         let previous = self.register(Reg::INT_SOURCE_REG);
         let value = if ctrl.iel() { previous | flags } else { flags };
         self.set(Reg::INT_SOURCE_REG, value);
@@ -338,12 +349,14 @@ impl Lis2mdlModel {
         if addr == Reg::OUTZ_H_REG.addr() {
             self.set(Reg::STATUS_REG, 0);
         }
+
         if addr == Reg::INT_SOURCE_REG.addr() {
             value = self.int_source().into();
             if IntCtrlReg::from(self.register(Reg::INT_CRTL_REG)).iel() {
                 self.set(Reg::INT_SOURCE_REG, 0);
             }
         }
+
         value
     }
 
@@ -367,6 +380,7 @@ impl Lis2mdlModel {
         } else {
             self.write_data(byte);
         }
+
         true
     }
 
@@ -398,6 +412,7 @@ impl Lis2mdlModel {
                 } else {
                     SpiState::Write
                 };
+
                 0
             }
             SpiState::Read => self.read_data(),

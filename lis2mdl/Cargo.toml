@@ -16,6 +16,9 @@ rust-version.workspace = true
 async = ["dep:embedded-hal-async"]
 defmt = ["dep:defmt", "lis2mdl-registers/defmt"]
 
+[lints]
+workspace = true
+
 [dependencies]
 lis2mdl-registers.workspace = true
 defmt = { workspace = true, optional = true }

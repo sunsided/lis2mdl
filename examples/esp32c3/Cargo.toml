@@ -6,6 +6,10 @@ license = "EUPL-1.2 OR MIT OR Apache-2.0"
 edition = "2024"
 publish = false
 
+[lints.clippy]
+# Modules live in `folder.rs` plus `folder/`, never in `folder/mod.rs`.
+mod_module_files = "deny"
+
 [dependencies]
 libm = "0.2.16"
 lis2mdl = { path = "../../lis2mdl" }

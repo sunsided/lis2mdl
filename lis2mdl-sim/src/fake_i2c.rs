@@ -35,6 +35,7 @@ impl<'a> FakeI2c<'a> {
                     if restart && !model.i2c_start(false) {
                         return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Address));
                     }
+
                     if !bytes.iter().all(|&b| model.i2c_write(b)) {
                         return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Data));
                     }
@@ -43,10 +44,12 @@ impl<'a> FakeI2c<'a> {
                     if restart && !model.i2c_start(true) {
                         return Err(ErrorKind::NoAcknowledge(NoAcknowledgeSource::Address));
                     }
+
                     buffer.iter_mut().for_each(|b| *b = model.i2c_read());
                 }
             }
         }
+
         Ok(())
     }
 }
