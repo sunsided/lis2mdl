@@ -38,6 +38,42 @@
 //! # Ok::<(), embedded_hal::i2c::ErrorKind>(())
 //! ```
 //!
+//! ## Coordinate frames
+//!
+//! The driver reports the field along the chip's own X, Y and Z axes. Which world direction
+//! they point to depends on how the chip is mounted on the board, so the conversion belongs
+//! in the board or application code. The [`coordinate-frame`] crate expresses it as a type.
+//! For a chip mounted with X to the north, Y to the west and Z up:
+//!
+//! ```
+//! # use core::cell::RefCell;
+//! # use lis2mdl_sim::{FakeI2c, Lis2mdlModel};
+//! use coordinate_frame::{NorthEastDown, NorthWestUp};
+//! use lis2mdl::Lis2mdl;
+//! # let model = RefCell::new(Lis2mdlModel::new());
+//! # model.borrow_mut().set_field(200, -200, 0);
+//! # let i2c = FakeI2c::new(&model);
+//!
+//! let mut mag = Lis2mdl::new(i2c);
+//! mag.trigger_single()?;
+//! let [x, y, z] = mag.read_magnetic_field()?.milligauss();
+//!
+//! // The mounting: the chip's axes, named in world terms.
+//! let sensor = NorthWestUp::new(x, y, z);
+//!
+//! // Any other frame follows from that, e.g. north-east-down for sensor fusion.
+//! let ned: NorthEastDown<f32> = sensor.into();
+//! assert_eq!((ned.north(), ned.east(), ned.down()), (300.0, 300.0, 0.0));
+//!
+//! // Heading in degrees clockwise from magnetic north, for a level board.
+//! let heading = ned.east().atan2(ned.north()).to_degrees().rem_euclid(360.0);
+//! assert_eq!(heading, 45.0);
+//! # Ok::<(), embedded_hal::i2c::ErrorKind>(())
+//! ```
+//!
+//! The heading is only valid while the board is level; tilt compensation needs an
+//! accelerometer.
+//!
 //! ## Byte order
 //!
 //! The driver tracks the `BLE` bit of `CFG_REG_C` and decodes the output registers
@@ -47,6 +83,7 @@
 //! [`embedded-hal`]: https://crates.io/crates/embedded-hal
 //! [`embedded-hal-async`]: https://crates.io/crates/embedded-hal-async
 //! [`lis2mdl-registers`]: https://crates.io/crates/lis2mdl-registers
+//! [`coordinate-frame`]: https://crates.io/crates/coordinate-frame
 
 #![deny(missing_docs)]
 #![deny(warnings)]
