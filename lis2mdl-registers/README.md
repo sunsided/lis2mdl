@@ -9,11 +9,11 @@
 [![Apache 2.0 licensed][license-apache-image]][license-apache-link]
 [![MIT licensed][license-mit-image]][license-mit-link]
 
-> A typed map of the LIS2MDL's I²C-accessible registers.
+> A typed map of the LIS2MDL's I²C/SPI-accessible registers.
 
 Provides functions and named fields to read and modify the magnetometer registers,
 built on [`hardware-registers`](https://crates.io/crates/hardware-registers).
-The register map follows the LIS2MDL datasheet (DS12144).
+The register map follows the LIS2MDL datasheet (DS12144 Rev 6).
 
 See also the [`lis2mdl`](https://crates.io/crates/lis2mdl) driver.
 

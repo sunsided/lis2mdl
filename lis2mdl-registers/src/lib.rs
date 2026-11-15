@@ -1,11 +1,15 @@
 //! # STMicroelectronics LIS2MDL Magnetometer Registers
 //!
-//! This crate provides a typed map of the LIS2MDL's I²C registers, following
+//! This crate provides a typed map of the LIS2MDL's I²C/SPI registers, following
 //! datasheet DS12144.
 //!
 //! Multi-byte values (hard-iron offsets, output data, temperature) are split into
-//! one register per byte. On I²C, the LIS2MDL increments the register address
-//! automatically, so consecutive registers can be read or written in one transfer.
+//! one register per byte. Consecutive registers can be read or written in one transfer:
+//!
+//! - On I²C, the most significant bit of the register address ([`I2C_AUTO_INCREMENT`])
+//!   enables address auto-increment.
+//! - On SPI, the first byte holds the read bit ([`SPI_READ`]) and the register address;
+//!   multi-byte transfers auto-increment.
 
 #![deny(missing_docs)]
 #![deny(warnings)]
@@ -22,6 +26,7 @@ pub mod prelude {
     pub use hardware_registers::i2c::*;
     pub use hardware_registers::register_address::RegisterAddress8;
     pub use hardware_registers::sizes::R1;
+    pub use hardware_registers::spi::{SPIRegister, SPIRegister8, WritableSPIRegister8};
     pub use hardware_registers::{FromBits, HardwareRegister, ToBits, WritableHardwareRegister};
 }
 
@@ -41,6 +46,15 @@ macro_rules! readable_register {
 
             const DEFAULT_DEVICE_ADDRESS: $crate::prelude::DeviceAddress7 =
                 $crate::prelude::DeviceAddress7::new($crate::DEFAULT_DEVICE_ADDRESS);
+            const REGISTER_ADDRESS: $crate::prelude::RegisterAddress8 =
+                $crate::prelude::RegisterAddress8::new(($addr).addr());
+        }
+
+        impl $crate::prelude::SPIRegister<$crate::prelude::RegisterAddress8, $crate::prelude::R1>
+            for $type
+        {
+            type Backing = u8;
+
             const REGISTER_ADDRESS: $crate::prelude::RegisterAddress8 =
                 $crate::prelude::RegisterAddress8::new(($addr).addr());
         }
@@ -87,6 +101,12 @@ pub use types::*;
 /// The LIS2MDL has a fixed 7-bit device address of `0011110b`
 /// (write address `0x3C`, read address `0x3D`).
 pub const DEFAULT_DEVICE_ADDRESS: u8 = 0x1E;
+
+/// The bit in the I²C register address (`SUB`) that enables address auto-increment.
+pub const I2C_AUTO_INCREMENT: u8 = 0x80;
+
+/// The read bit in the first byte of an SPI transfer. Writes leave it cleared.
+pub const SPI_READ: u8 = 0x80;
 
 /// The value of the [`WhoAmI`] register for a LIS2MDL.
 pub const LIS2MDL_WHO_AM_I: u8 = 0x40;
