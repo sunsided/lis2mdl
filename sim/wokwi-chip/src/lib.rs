@@ -65,6 +65,7 @@ impl Chip {
                 attrReadFloat(self.temperature) as f32,
             )
         };
+
         self.model.set_field(
             milligauss_to_lsb(x),
             milligauss_to_lsb(y),
@@ -130,10 +131,12 @@ pub extern "C" fn chipInit() {
             field: ["fieldX", "fieldY", "fieldZ"].map(|id| attrInit(cstr(id).as_ptr(), 0.0)),
             temperature: attrInit(cstr("temperature").as_ptr(), 25.0),
         };
+
         CHIP.with(|c| *c.borrow_mut() = Some(chip));
 
         timerStart(tick_timer, TICK_US, true);
     }
+
     debug("lis2mdl: chip initialized");
 }
 

@@ -299,6 +299,7 @@ where
         let saved_a = self.read_register::<CfgRegA>()?;
         let saved_b = self.read_register::<CfgRegB>()?;
         let saved_c = self.read_register::<CfgRegC>()?;
+
         let result = self.run_self_test(self_test::configuration(saved_c), delay);
 
         // Restore, even if the test failed.
@@ -321,9 +322,11 @@ where
         self.write_register(a)?;
         delay.delay_ms(self_test::SETTLE_MS);
         let without = self.self_test_sum(delay)?;
+
         self.write_register(c.with_self_test(true))?;
         delay.delay_ms(self_test::SELF_TEST_SETTLE_MS);
         let with = self.self_test_sum(delay)?;
+
         Ok(SelfTest::from_sums(without, with))
     }
 
@@ -334,11 +337,13 @@ where
     {
         self.wait_for_data(delay)?;
         self.read_magnetic_field()?;
+
         let mut sum = [0; 3];
         for _ in 0..SELF_TEST_SAMPLES {
             self.wait_for_data(delay)?;
             self_test::accumulate(&mut sum, self.read_magnetic_field()?);
         }
+
         Ok(sum)
     }
 
@@ -350,8 +355,10 @@ where
             if self.data_ready()? {
                 return Ok(());
             }
+
             delay.delay_ms(self_test::POLL_MS);
         }
+
         Err(SelfTestError::Timeout)
     }
 

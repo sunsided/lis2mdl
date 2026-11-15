@@ -82,6 +82,7 @@ mod tests {
         for m in [Mode::Continuous, Mode::Single, Mode::Idle] {
             assert_eq!(Mode::from_bits(m.into_bits()), m);
         }
+
         assert_eq!(Mode::from_bits(0b10), Mode::Idle);
     }
 

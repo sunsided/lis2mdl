@@ -59,6 +59,7 @@ fn main() -> ! {
     if who_am_i != lis2mdl::LIS2MDL_WHO_AM_I {
         panic!("unexpected WHO_AM_I 0x{who_am_i:02X}");
     }
+
     println!("LIS2MDL ok who_am_i=0x{who_am_i:02X}");
 
     let st = mag.self_test(&mut delay).expect("self-test runs");
@@ -105,6 +106,7 @@ fn main() -> ! {
         } else if !level && int_active {
             println!("int clear");
         }
+
         int_active = level;
 
         delay.delay_millis(5);

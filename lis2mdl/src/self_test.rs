@@ -61,6 +61,7 @@ impl SelfTest {
             let d = (with[axis] - without[axis]) as f32 / n * MILLIGAUSS_PER_LSB;
             if d < 0.0 { -d } else { d }
         };
+
         Self {
             difference_milligauss: [difference(0), difference(1), difference(2)],
         }

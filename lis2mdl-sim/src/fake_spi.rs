@@ -44,6 +44,7 @@ impl<'a> FakeSpi<'a> {
                 Operation::DelayNs(_) => {}
             }
         }
+
         Ok(())
     }
 }

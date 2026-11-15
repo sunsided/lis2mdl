@@ -225,6 +225,7 @@ fn self_test_times_out_without_data() {
     impl embedded_hal::delay::DelayNs for NoDelay {
         fn delay_ns(&mut self, _: u32) {}
     }
+
     let model = RefCell::new(Lis2mdlModel::new());
     let mut mag = Lis2mdl::new(FakeI2c::new(&model));
     assert_eq!(mag.self_test(&mut NoDelay), Err(SelfTestError::Timeout));

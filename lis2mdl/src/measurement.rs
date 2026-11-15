@@ -37,6 +37,7 @@ impl MagneticField {
             let v = v / MILLIGAUSS_PER_LSB;
             (if v < 0.0 { v - 0.5 } else { v + 0.5 }) as i16
         };
+
         Self::new(lsb(x), lsb(y), lsb(z))
     }
 

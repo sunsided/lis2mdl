@@ -7,6 +7,7 @@ use crate::{
     LIS2MDL_WHO_AM_I, MagneticField, Mode, OutputDataRate, SELF_TEST_SAMPLES, SelfTest,
     SelfTestError, Temperature, configure_mode, self_test, track_byte_order,
 };
+
 use embedded_hal_async::delay::DelayNs;
 use lis2mdl_registers::prelude::*;
 use lis2mdl_registers::{
@@ -221,6 +222,7 @@ where
         let saved_a = self.read_register::<CfgRegA>().await?;
         let saved_b = self.read_register::<CfgRegB>().await?;
         let saved_c = self.read_register::<CfgRegC>().await?;
+
         let result = self
             .run_self_test(self_test::configuration(saved_c), delay)
             .await;
@@ -245,9 +247,11 @@ where
         self.write_register(a).await?;
         delay.delay_ms(self_test::SETTLE_MS).await;
         let without = self.self_test_sum(delay).await?;
+
         self.write_register(c.with_self_test(true)).await?;
         delay.delay_ms(self_test::SELF_TEST_SETTLE_MS).await;
         let with = self.self_test_sum(delay).await?;
+
         Ok(SelfTest::from_sums(without, with))
     }
 
@@ -261,11 +265,13 @@ where
     {
         self.wait_for_data(delay).await?;
         self.read_magnetic_field().await?;
+
         let mut sum = [0; 3];
         for _ in 0..SELF_TEST_SAMPLES {
             self.wait_for_data(delay).await?;
             self_test::accumulate(&mut sum, self.read_magnetic_field().await?);
         }
+
         Ok(sum)
     }
 
@@ -277,8 +283,10 @@ where
             if self.data_ready().await? {
                 return Ok(());
             }
+
             delay.delay_ms(self_test::POLL_MS).await;
         }
+
         Err(SelfTestError::Timeout)
     }
 
