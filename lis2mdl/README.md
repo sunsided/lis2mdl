@@ -12,6 +12,9 @@
 
 > A platform-agnostic `embedded-hal` 1.0 driver for the LIS2MDL 3-axis magnetometer.
 
+> **Status:** tested against a behavioral model of the chip (host tests and Wokwi), not yet
+> verified on real hardware. See [#6](https://github.com/sunsided/lis2mdl/issues/6).
+
 - `no_std`, no `unsafe`, I²C or SPI (3-wire or 4-wire). The bus is taken by value, so
   `embedded-hal-bus` sharing works.
 - Blocking API, plus an equivalent async API on `embedded-hal-async` behind the `async` feature
