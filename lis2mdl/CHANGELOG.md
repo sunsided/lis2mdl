@@ -5,6 +5,10 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-15
+
+[0.2.1]: https://github.com/sunsided/lis2mdl/releases/tag/v0.2.1
+
 ### Added
 
 - `coordinate-frame` feature (coordinate-frame 0.6) with the `SensorFrame` alias, the sensor's axes as

@@ -5,6 +5,10 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-15
+
+[0.2.1]: https://github.com/sunsided/lis2mdl/releases/tag/v0.2.1
+
 ### Changed
 
 - With the `defmt` feature, registers log their fields (e.g. `CfgRegA { md: Idle, odr: Hz10, … }`)

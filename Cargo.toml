@@ -4,7 +4,7 @@ members = ["lis2mdl-registers", "lis2mdl", "lis2mdl-sim"]
 exclude = ["sim/wokwi-chip", "examples"]
 
 [workspace.package]
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Markus Mayer <widemeadows@gmail.com>"]
 license = "EUPL-1.2 OR MIT OR Apache-2.0"
 repository = "https://github.com/sunsided/lis2mdl"
@@ -24,5 +24,5 @@ embedded-hal-async = "1.0.0"
 embassy-futures = "0.1.2"
 fake-bus = "0.1.0"
 hardware-registers = "0.4.1"
-lis2mdl-registers = { path = "lis2mdl-registers", version = "0.2.0" }
+lis2mdl-registers = { path = "lis2mdl-registers", version = "0.2.1" }
 lis2mdl-sim = { path = "lis2mdl-sim" }
