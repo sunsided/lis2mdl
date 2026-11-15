@@ -94,8 +94,9 @@ pub struct Lis2mdlModel {
     temperature: i16,
     /// Time since the last sample in continuous mode.
     elapsed_us: u32,
-    /// Nanoseconds not yet passed to [`Self::tick`], which works in whole microseconds.
-    pending_ns: u64,
+    /// Converts the nanoseconds of [`fake_bus::Clock`] to the whole microseconds of
+    /// [`Self::tick`].
+    ticks: fake_bus::Micros,
     spi: SpiState,
 }
 
@@ -115,7 +116,7 @@ impl Lis2mdlModel {
             field: [0; 3],
             temperature: 0,
             elapsed_us: 0,
-            pending_ns: 0,
+            ticks: fake_bus::Micros::new(),
             spi: SpiState::Command,
         };
 
