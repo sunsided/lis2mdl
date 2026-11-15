@@ -7,7 +7,7 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
-- [**breaking**] Updated to `hardware-registers` 0.4. `Register` now requires
+- [**breaking**] Updated to `hardware-registers` 0.4.1. `Register` now requires
   `ReadableI2CRegister8` and `FromBits<u8>`, as 0.4 no longer implies readability.
 
 ## [0.1.0] - 2026-11-15
