@@ -5,6 +5,11 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- Dropped `#![deny(warnings)]`, so a warning added by a newer compiler can no longer
+  fail the docs.rs build.
+
 ## [0.2.1] - 2026-11-15
 
 [0.2.1]: https://github.com/sunsided/lis2mdl/releases/tag/v0.2.1
