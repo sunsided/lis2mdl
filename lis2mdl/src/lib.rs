@@ -43,15 +43,19 @@
 //! The driver reports the field along the chip's own X, Y and Z axes. Which world direction
 //! they point to depends on how the chip is mounted on the board, so the conversion belongs
 //! in the board or application code. The [`coordinate-frame`] crate expresses it as a type.
-//! For a chip mounted with X to the north, Y to the west and Z up:
+//! The chip's axes are left-handed (DS12144 Rev 6, figure 2), so a chip mounted flat with
+//! X to the north has Y to the east and Z up. The `coordinate-frame` feature names this
+//! frame `SensorFrame`.
+//!
+//! For a chip mounted with X to the north, Y to the east and Z up:
 //!
 //! ```
 //! # use core::cell::RefCell;
 //! # use lis2mdl_sim::{FakeI2c, Lis2mdlModel};
-//! use coordinate_frame::{NorthEastDown, NorthWestUp};
+//! use coordinate_frame::{NorthEastDown, NorthEastUp};
 //! use lis2mdl::Lis2mdl;
 //! # let model = RefCell::new(Lis2mdlModel::new());
-//! # model.borrow_mut().set_field(200, -200, 0);
+//! # model.borrow_mut().set_field(200, 200, 0);
 //! # let i2c = FakeI2c::new(&model);
 //!
 //! let mut mag = Lis2mdl::new(i2c);
@@ -59,7 +63,7 @@
 //! let [x, y, z] = mag.read_magnetic_field()?.milligauss();
 //!
 //! // The mounting: the chip's axes, named in world terms.
-//! let sensor = NorthWestUp::new(x, y, z);
+//! let sensor = NorthEastUp::new(x, y, z);
 //!
 //! // Any other frame follows from that, e.g. north-east-down for sensor fusion.
 //! let ned: NorthEastDown<f32> = sensor.into();
