@@ -17,7 +17,7 @@ Requires `rustup target add riscv32imc-unknown-none-elf wasm32-unknown-unknown`,
 
 ```sh
 task wokwi:test          # from the repository root: builds the chip and the firmware
-task wokwi:test          # from this directory, once the chip is built (task chip:build)
+task wokwi:test          # from this directory, after `task chip:build` in the root
 task wokwi -- --timeout 0   # just run it and watch the serial output
 ```
 
