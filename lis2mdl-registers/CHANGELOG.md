@@ -5,6 +5,10 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-15
+
+[0.1.0]: https://github.com/sunsided/lis2mdl/releases/tag/v0.1.0
+
 ### Added
 
 - Register map following the LIS2MDL datasheet (DS12144 Rev 6), with I²C and SPI register traits.
