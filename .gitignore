@@ -4,3 +4,4 @@ target/
 Cargo.lock
 *.chip.wasm
 .task/
+lcov.info
