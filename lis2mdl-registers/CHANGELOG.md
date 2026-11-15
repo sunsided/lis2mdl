@@ -5,6 +5,10 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-15
+
+[0.2.0]: https://github.com/sunsided/lis2mdl/releases/tag/v0.2.0
+
 ### Changed
 
 - [**breaking**] Updated to `hardware-registers` 0.4.1. `Register` now requires
