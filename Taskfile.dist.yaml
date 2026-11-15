@@ -36,12 +36,11 @@ tasks:
       - cargo test --workspace --all-features {{.CLI_ARGS}}
 
   test:matrix:
-    desc: Run all tests with default, all and no default features, as CI does
+    desc: Run all tests without and with all features, as CI does
     preconditions: *cargo
     cmds:
       - cargo test --workspace
       - cargo test --workspace --all-features
-      - cargo test --workspace --no-default-features
 
   coverage:
     desc: Measure test coverage and open the HTML report

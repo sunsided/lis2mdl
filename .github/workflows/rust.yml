@@ -83,7 +83,8 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        features: [ "", "--all-features", "--no-default-features" ]
+        # No crate has default features, so "" also covers --no-default-features.
+        features: [ "", "--all-features" ]
     env:
       FEATURES: ${{ matrix.features }}
     steps:
