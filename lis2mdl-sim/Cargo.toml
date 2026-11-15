@@ -10,6 +10,10 @@ repository.workspace = true
 edition.workspace = true
 rust-version.workspace = true
 
+[package.metadata.release]
+# Not published; the workspace tag is created by the lis2mdl crate.
+tag = false
+
 [lints]
 workspace = true
 
