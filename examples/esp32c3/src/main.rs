@@ -6,7 +6,7 @@
 #![no_std]
 #![no_main]
 
-use coordinate_frame::NorthEastDown;
+use coordinate_frame::NorthEastUp;
 use esp_backtrace as _;
 use esp_hal::delay::Delay;
 use esp_hal::gpio::{Input, InputConfig, Pull};
@@ -27,9 +27,10 @@ const THRESHOLD_MG: f32 = 1000.0;
 
 /// How the chip is mounted on the board: its X, Y and Z axes named in world terms.
 ///
-/// Here X points north, Y east and Z down. For another mounting, change the type, e.g. to
-/// `NorthWestUp<f32>` for X north, Y west, Z up.
-type Mounting = NorthEastDown<f32>;
+/// The axes are left-handed (DS12144 Rev 6, figure 2). Here the chip lies flat: X points
+/// north, Y east and Z up. For another mounting, change the type, e.g. to
+/// `NorthWestDown<f32>` for the chip upside down with X north.
+type Mounting = NorthEastUp<f32>;
 
 /// The heading in degrees (0–360) clockwise from magnetic north, for a level board.
 fn heading(field: &MagneticField) -> f32 {

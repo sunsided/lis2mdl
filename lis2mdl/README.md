@@ -45,6 +45,22 @@ if mag.data_ready()? {
 
 - `async`: adds `lis2mdl::asynch::Lis2mdl` on `embedded-hal-async`.
 - `defmt`: derives `defmt::Format` for the public types.
+- `coordinate-frame`: adds `lis2mdl::SensorFrame`, see below.
+
+## Coordinate frame
+
+With the `coordinate-frame` feature, `SensorFrame<T>` names the sensor's axes as a
+[`coordinate-frame`](https://crates.io/crates/coordinate-frame) type. The datasheet
+(DS12144 Rev 6, figure 2) draws a left-handed set with +Z out of the top face, so
+`SensorFrame` is `NorthEastUp` (X = North, Y = East, Z = Up). Convert into your board frame:
+
+```rust,ignore
+use coordinate_frame::NorthEastDown;
+use lis2mdl::SensorFrame;
+
+let field = SensorFrame::from(mag.read_magnetic_field()?.microtesla());
+let ned: NorthEastDown<f32> = field.into();
+```
 
 ST also provides an official driver, [`lis2mdl-rs`](https://crates.io/crates/lis2mdl-rs).
 This crate follows the register-crate pattern of its sibling drivers instead.

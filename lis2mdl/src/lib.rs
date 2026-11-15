@@ -43,15 +43,19 @@
 //! The driver reports the field along the chip's own X, Y and Z axes. Which world direction
 //! they point to depends on how the chip is mounted on the board, so the conversion belongs
 //! in the board or application code. The [`coordinate-frame`] crate expresses it as a type.
-//! For a chip mounted with X to the north, Y to the west and Z up:
+//! The chip's axes are left-handed (DS12144 Rev 6, figure 2), so a chip mounted flat with
+//! X to the north has Y to the east and Z up. The `coordinate-frame` feature names this
+//! frame `SensorFrame`.
+//!
+//! For a chip mounted with X to the north, Y to the east and Z up:
 //!
 //! ```
 //! # use core::cell::RefCell;
 //! # use lis2mdl_sim::{FakeI2c, Lis2mdlModel};
-//! use coordinate_frame::{NorthEastDown, NorthWestUp};
+//! use coordinate_frame::{NorthEastDown, NorthEastUp};
 //! use lis2mdl::Lis2mdl;
 //! # let model = RefCell::new(Lis2mdlModel::new());
-//! # model.borrow_mut().set_field(200, -200, 0);
+//! # model.borrow_mut().set_field(200, 200, 0);
 //! # let i2c = FakeI2c::new(&model);
 //!
 //! let mut mag = Lis2mdl::new(i2c);
@@ -59,7 +63,7 @@
 //! let [x, y, z] = mag.read_magnetic_field()?.milligauss();
 //!
 //! // The mounting: the chip's axes, named in world terms.
-//! let sensor = NorthWestUp::new(x, y, z);
+//! let sensor = NorthEastUp::new(x, y, z);
 //!
 //! // Any other frame follows from that, e.g. north-east-down for sensor fusion.
 //! let ned: NorthEastDown<f32> = sensor.into();
@@ -108,6 +112,37 @@ pub use measurement::{MagneticField, Temperature};
 pub use self_test::{
     SELF_TEST_MAX_MILLIGAUSS, SELF_TEST_MIN_MILLIGAUSS, SELF_TEST_SAMPLES, SelfTest, SelfTestError,
 };
+
+/// A vector in the sensor's own axes, as a [`coordinate_frame`] type.
+///
+/// The LIS2MDL datasheet (DS12144 Rev 6, section 1.2, figure 2 "Pin connections", page 3)
+/// draws +Z out of the top face, +X and +Y in the package plane. Seen from above, +Y lies
+/// 90° clockwise of +X, so the axes form a **left-handed** set. With +Z as Up, this is
+/// [`NorthEastUp`](coordinate_frame::NorthEastUp): X = North, Y = East, Z = Up.
+///
+/// Convert a reading with [`From<[T; 3]>`](From), then into your board frame with `.into()`:
+///
+/// ```
+/// # use core::cell::RefCell;
+/// # use lis2mdl_sim::{FakeI2c, Lis2mdlModel};
+/// use coordinate_frame::NorthEastDown;
+/// use lis2mdl::{Lis2mdl, OutputDataRate, SensorFrame};
+/// # let model = RefCell::new(Lis2mdlModel::new());
+/// # model.borrow_mut().set_field(200, 100, -300);
+/// # let i2c = FakeI2c::new(&model);
+///
+/// let mut mag = Lis2mdl::new(i2c);
+/// mag.start_continuous(OutputDataRate::Hz50)?;
+/// # model.borrow_mut().tick(20_000);
+///
+/// let field = SensorFrame::from(mag.read_magnetic_field()?.microtesla());
+/// let ned: NorthEastDown<f32> = field.into();
+/// assert_eq!((ned.north(), ned.east(), ned.down()), (30.0, 15.0, 45.0));
+/// # Ok::<(), embedded_hal::i2c::ErrorKind>(())
+/// ```
+#[cfg(feature = "coordinate-frame")]
+#[cfg_attr(docsrs, doc(cfg(feature = "coordinate-frame")))]
+pub type SensorFrame<T> = coordinate_frame::NorthEastUp<T>;
 
 use embedded_hal::delay::DelayNs;
 use lis2mdl_registers::prelude::*;
