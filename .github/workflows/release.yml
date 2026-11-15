@@ -82,8 +82,19 @@ jobs:
       - name: Publish
         env:
           CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
-        # Publishes in dependency order: lis2mdl-registers first, then lis2mdl.
-        run: cargo publish -p lis2mdl-registers -p lis2mdl
+        # Publishes in dependency order: lis2mdl-registers first, then lis2mdl. Versions that
+        # are already on crates.io (a manual first release, or a re-run) are skipped.
+        run: |
+          for crate in lis2mdl-registers lis2mdl; do
+            version=$(cargo metadata --no-deps --format-version 1 \
+              | jq -r --arg crate "$crate" '.packages[] | select(.name == $crate) | .version')
+            if curl -sfA "sunsided/lis2mdl release workflow" \
+                "https://crates.io/api/v1/crates/$crate/$version" > /dev/null; then
+              echo "$crate $version is already on crates.io; skipping"
+            else
+              cargo publish -p "$crate"
+            fi
+          done
 
   github-release:
     name: Create GitHub Release

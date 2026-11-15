@@ -2,6 +2,9 @@
 
 > Platform-agnostic Rust support for the STMicroelectronics LIS2MDL 3-axis magnetometer.
 
+> **Status:** tested against a behavioral model of the chip (host tests and Wokwi), not yet
+> verified on real hardware. See [#6](https://github.com/sunsided/lis2mdl/issues/6).
+
 | Crate                                    | Description                                                |
 |------------------------------------------|------------------------------------------------------------|
 | [`lis2mdl-registers`](lis2mdl-registers) | A typed map of the LIS2MDL's I²C/SPI registers.            |
