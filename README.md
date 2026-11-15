@@ -18,6 +18,9 @@ The register map follows the LIS2MDL datasheet (DS12144). ST's official driver,
 
 The behavioral model in `lis2mdl-sim` is used as a fake I²C bus and SPI device in host tests.
 
+**[Try it in the browser](https://wokwi.com/projects/480780742750157825)**: an ESP32-C3 talking to the emulated LIS2MDL on
+wokwi.com. Click the chip and use its magnetic-field and temperature sliders.
+
 ### Use the chip in your own Wokwi project
 
 Every [GitHub Release](https://github.com/sunsided/lis2mdl/releases) carries the chip as
@@ -30,6 +33,9 @@ latest release version written without the tag's `v` (`@v0.2.1` fails to load):
 
 This works on [wokwi.com](https://wokwi.com), in the Wokwi VS Code extension and with
 `wokwi-cli`; nothing needs to be built.
+
+For a browser demo, [`examples/arduino-esp32c3`](examples/arduino-esp32c3/README.md) has an
+Arduino sketch and `diagram.json` to paste into a new wokwi.com project.
 
 ### Run the example locally
 
