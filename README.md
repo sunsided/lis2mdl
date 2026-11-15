@@ -18,6 +18,31 @@ The register map follows the LIS2MDL datasheet (DS12144). ST's official driver,
 
 The behavioral model in `lis2mdl-sim` is used as a fake I²C bus and SPI device in host tests.
 
+### Use the chip in your own Wokwi project
+
+Every [GitHub Release](https://github.com/sunsided/lis2mdl/releases) carries the chip as
+`chip.zip`. Add a `chip-lis2mdl` part and this dependency to your `diagram.json`, with the
+latest release version written without the tag's `v` (`@v0.2.1` fails to load):
+
+```json
+"dependencies": { "chip-lis2mdl": "github:sunsided/lis2mdl@0.2.1" }
+```
+
+This works on [wokwi.com](https://wokwi.com), in the Wokwi VS Code extension and with
+`wokwi-cli`; nothing needs to be built.
+
+### Run the example locally
+
+Needs [`wokwi-cli`](https://docs.wokwi.com/wokwi-ci/cli-installation) and a
+`WOKWI_CLI_TOKEN` from the [Wokwi CI dashboard](https://wokwi.com/dashboard/ci):
+
+```sh
+task wokwi:test
+```
+
+[`sim/wokwi-chip`](sim/wokwi-chip/README.md) describes building the chip and its pins;
+[`examples/esp32c3`](examples/esp32c3/README.md) the wiring and the scenario.
+
 ## Code of Conduct
 
 We abide by the [Contributor Covenant][cc] and ask that you do as well.
