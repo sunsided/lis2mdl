@@ -1,0 +1,116 @@
+# https://taskfile.dev
+version: '3'
+
+vars:
+  EMBEDDED_TARGETS: thumbv7em-none-eabihf riscv32imc-unknown-none-elf
+  # The no_std crates; lis2mdl-sim is host-only test support.
+  EMBEDDED_CRATES: -p lis2mdl-registers -p lis2mdl
+
+tasks:
+  default:
+    cmds:
+      - task --list --sort=none
+    silent: true
+
+  build:
+    desc: Build the workspace for the host
+    preconditions: &cargo
+      - sh: command -v cargo
+        msg: "cargo not found — install Rust from https://rustup.rs/"
+    cmds:
+      - cargo build --workspace --all-targets --all-features
+
+  build:embedded:
+    desc: Build the no_std crates for the embedded targets used in CI
+    preconditions: *cargo
+    cmds:
+      - for: { var: EMBEDDED_TARGETS, split: ' ' }
+        cmd: |
+          rustup target list --installed | grep -qx {{.ITEM}} || rustup target add {{.ITEM}}
+          cargo build {{.EMBEDDED_CRATES}} --all-features --target {{.ITEM}}
+
+  test:
+    desc: Run all tests with all features (pass extra args after --)
+    preconditions: *cargo
+    cmds:
+      - cargo test --workspace --all-features {{.CLI_ARGS}}
+
+  test:matrix:
+    desc: Run all tests with default, all and no default features, as CI does
+    preconditions: *cargo
+    cmds:
+      - cargo test --workspace
+      - cargo test --workspace --all-features
+      - cargo test --workspace --no-default-features
+
+  fmt:
+    desc: Format all sources
+    aliases: [format]
+    preconditions: *cargo
+    cmds:
+      - cargo fmt --all
+
+  fmt:check:
+    desc: Check formatting without modifying files
+    preconditions: *cargo
+    cmds:
+      - cargo fmt --all --check
+
+  lint:
+    desc: Run clippy with warnings as errors
+    preconditions: *cargo
+    cmds:
+      - cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  lint:fix:
+    desc: Apply clippy fixes, then format
+    aliases: [fix]
+    preconditions: *cargo
+    cmds:
+      - cargo clippy --workspace --all-targets --all-features --fix --allow-dirty --allow-staged
+      - task: fmt
+
+  spell:
+    desc: Check spelling
+    preconditions:
+      - sh: command -v codespell
+        msg: "codespell not found — pipx install codespell"
+    cmds:
+      - codespell
+
+  docs:
+    desc: Build the documentation (warnings as errors)
+    preconditions: *cargo
+    env:
+      RUSTDOCFLAGS: -D warnings
+    cmds:
+      - cargo doc --workspace --all-features --no-deps
+
+  docs:open:
+    desc: Build the documentation and open it in the browser
+    preconditions: *cargo
+    cmds:
+      - cargo doc --workspace --all-features --no-deps --open
+
+  check:
+    desc: Run all static checks
+    cmds:
+      - task: fmt:check
+      - task: lint
+      - task: spell
+      - task: docs
+
+  ci:
+    desc: Run the full CI sequence locally
+    cmds:
+      - task: check
+      - task: test:matrix
+      - task: build:embedded
+
+  clean:
+    desc: Remove build artifacts
+    preconditions: *cargo
+    status:
+      - test ! -d target
+    cmds:
+      - cargo clean
