@@ -11,19 +11,25 @@
 
 > A platform-agnostic `embedded-hal` 1.0 driver for the LIS2MDL 3-axis magnetometer.
 
-- `no_std`, no `unsafe`, I²C (the bus is taken by value, so `embedded-hal-bus` sharing works)
+- `no_std`, no `unsafe`, I²C or SPI (3-wire or 4-wire). The bus is taken by value, so
+  `embedded-hal-bus` sharing works.
 - Blocking API, plus an equivalent async API on `embedded-hal-async` behind the `async` feature
 - `WHO_AM_I` check, continuous and single measurement modes, data-ready polling
 - Magnetic field in raw LSB, milligauss or microtesla; die temperature in °C
 - Hard-iron offset registers, so the device itself applies the calibration
+- Low-power mode, low-pass filter, offset cancellation, block data update, soft reset, reboot
+- Threshold interrupts (threshold, source, INT/DRDY pin configuration)
+- Self-test with the datasheet limits (15 to 500 mG per axis)
+- Byte order (`BLE`) tracking, so swapped output registers are decoded correctly
 - Typed access to every register via `read_register`, `write_register` and `modify_register`
 
 ```rust,ignore
-use lis2mdl::{Lis2mdl, OutputDataRate, registers::CfgRegB};
+use lis2mdl::{Lis2mdl, OutputDataRate};
 
-let mut mag = Lis2mdl::new(i2c);
+let mut mag = Lis2mdl::new(i2c); // or Lis2mdl::new_spi(spi)
 assert!(mag.identify()?);
-mag.modify_register(|r: CfgRegB| r.with_lpf(true).with_off_canc(true))?;
+mag.set_low_pass_filter(true)?;
+mag.set_offset_cancellation(true)?;
 mag.start_continuous(OutputDataRate::Hz50)?;
 
 if mag.data_ready()? {

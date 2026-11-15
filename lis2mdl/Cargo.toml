@@ -23,6 +23,7 @@ embedded-hal.workspace = true
 embedded-hal-async = { workspace = true, optional = true }
 
 [dev-dependencies]
+embedded-hal.workspace = true
 lis2mdl-sim.workspace = true
 embassy-futures.workspace = true
 
