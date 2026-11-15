@@ -2,6 +2,9 @@
 .#*
 target/
 Cargo.lock
+# The firmware and the Wokwi chip are programs; pin their dependencies.
+!examples/esp32c3/Cargo.lock
+!sim/wokwi-chip/Cargo.lock
 *.chip.wasm
 .task/
 lcov.info
