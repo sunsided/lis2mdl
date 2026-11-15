@@ -1,0 +1,31 @@
+[package]
+name = "lis2mdl"
+description = "A platform-agnostic embedded-hal driver for the STMicroelectronics LIS2MDL magnetometer"
+categories = ["embedded", "hardware-support", "no-std"]
+keywords = ["embedded-hal-driver", "lis2mdl", "magnetometer", "compass", "i2c"]
+readme = "README.md"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[features]
+async = ["dep:embedded-hal-async"]
+defmt = ["dep:defmt", "lis2mdl-registers/defmt"]
+
+[dependencies]
+lis2mdl-registers.workspace = true
+defmt = { workspace = true, optional = true }
+embedded-hal.workspace = true
+embedded-hal-async = { workspace = true, optional = true }
+
+[dev-dependencies]
+lis2mdl-sim.workspace = true
+embassy-futures.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
