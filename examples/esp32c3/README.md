@@ -16,9 +16,9 @@ Requires `rustup target add riscv32imc-unknown-none-elf wasm32-unknown-unknown`,
 [`wokwi-cli`](https://docs.wokwi.com/wokwi-ci/cli-installation) and `WOKWI_CLI_TOKEN`.
 
 ```sh
-../../sim/wokwi-chip/build.sh
-cargo build --release
-wokwi-cli . --scenario scenarios/compass.yaml --timeout 20000
+task wokwi:test          # from the repository root: builds the chip and the firmware
+task wokwi:test          # from this directory, once the chip is built (task chip:build)
+task wokwi -- --timeout 0   # just run it and watch the serial output
 ```
 
 Or open this directory in VS Code with the Wokwi extension and drag the field sliders.
@@ -26,5 +26,5 @@ Or open this directory in VS Code with the Wokwi extension and drag the field sl
 ## Run on hardware
 
 ```sh
-cargo run --release   # uses espflash
+task run   # flashes with espflash and opens the serial monitor
 ```

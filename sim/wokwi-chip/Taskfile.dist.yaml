@@ -1,0 +1,57 @@
+# https://taskfile.dev
+# Wokwi custom chip. Runs standalone from this directory, or from the repository root as chip:*.
+version: '3'
+
+vars:
+  HOST:
+    sh: "rustc -vV | sed -n 's/^host: //p'"
+
+tasks:
+  default:
+    cmds:
+      - task --list --sort=none
+    silent: true
+
+  build:
+    desc: Build the chip into lis2mdl.chip.wasm
+    preconditions: &wasm
+      - sh: command -v cargo
+        msg: "cargo not found — install Rust from https://rustup.rs/"
+      - sh: rustup target list --installed | grep -qx wasm32-unknown-unknown
+        msg: "wasm32 target missing — rustup target add wasm32-unknown-unknown"
+    sources:
+      - Cargo.toml
+      - Cargo.lock
+      - lis2mdl.chip.json
+      - src/**/*.rs
+      - ../../lis2mdl-sim/src/**/*.rs
+      - ../../lis2mdl-registers/src/**/*.rs
+    generates:
+      - lis2mdl.chip.wasm
+    cmds:
+      - ./build.sh
+
+  test:
+    desc: Run the chip's unit tests on the host
+    preconditions: *wasm
+    cmds:
+      - cargo test --target {{.HOST}} {{.CLI_ARGS}}
+
+  fmt:
+    desc: Format the chip sources
+    preconditions: *wasm
+    cmds:
+      - cargo fmt
+
+  lint:
+    desc: Check formatting and run clippy with warnings as errors
+    preconditions: *wasm
+    cmds:
+      - cargo fmt --check
+      - cargo clippy --release -- -D warnings
+
+  clean:
+    desc: Remove build artifacts and the chip binary
+    cmds:
+      - cargo clean
+      - rm -f lis2mdl.chip.wasm

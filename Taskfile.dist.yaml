@@ -1,6 +1,14 @@
 # https://taskfile.dev
 version: '3'
 
+includes:
+  chip:
+    taskfile: sim/wokwi-chip/Taskfile.dist.yaml
+    dir: sim/wokwi-chip
+  esp32c3:
+    taskfile: examples/esp32c3/Taskfile.dist.yaml
+    dir: examples/esp32c3
+
 vars:
   EMBEDDED_TARGETS: thumbv7em-none-eabihf riscv32imc-unknown-none-elf
   # The no_std crates; lis2mdl-sim is host-only test support.
@@ -114,41 +122,17 @@ tasks:
       - task: test:matrix
       - task: build:embedded
 
-  wokwi:chip:
-    desc: Build the Wokwi custom chip (sim/wokwi-chip/lis2mdl.chip.wasm)
-    preconditions: *cargo
-    dir: sim/wokwi-chip
-    sources: [Cargo.toml, src/**/*.rs, ../../lis2mdl-sim/src/**/*.rs, ../../lis2mdl-registers/src/**/*.rs]
-    generates: [lis2mdl.chip.wasm]
-    cmds:
-      - ./build.sh
-
-  wokwi:build:
-    desc: Build the Wokwi chip and the ESP32-C3 example firmware
-    preconditions: *cargo
-    deps: [wokwi:chip]
-    dir: examples/esp32c3
-    cmds:
-      - cargo build --release
-
   wokwi:lint:
-    desc: Check formatting and run clippy on the Wokwi chip and the example firmware
-    preconditions: *cargo
+    desc: Lint the Wokwi chip and the ESP32-C3 example firmware
     cmds:
-      - for: [sim/wokwi-chip, examples/esp32c3]
-        cmd: cd {{.ITEM}} && cargo fmt --check && cargo clippy --release -- -D warnings
+      - task: chip:lint
+      - task: esp32c3:lint
 
   wokwi:test:
-    desc: Run the ESP32-C3 example against the Wokwi chip with the automation scenario
-    deps: [wokwi:build]
-    dir: examples/esp32c3
-    preconditions:
-      - sh: command -v wokwi-cli
-        msg: "wokwi-cli not found — see https://docs.wokwi.com/wokwi-ci/cli-installation"
-      - sh: test -n "$WOKWI_CLI_TOKEN"
-        msg: "WOKWI_CLI_TOKEN not set — get a token at https://wokwi.com/dashboard/ci"
+    desc: Build the Wokwi chip and the ESP32-C3 example, then run the automation scenario
     cmds:
-      - wokwi-cli . --scenario scenarios/compass.yaml --timeout 30000
+      - task: chip:build
+      - task: esp32c3:wokwi:test
 
   release:dry-run:
     desc: Show what a release would do (LEVEL=patch|minor|major or an exact version)
@@ -170,9 +154,9 @@ tasks:
       - cargo release {{.LEVEL}} --workspace --execute
 
   clean:
-    desc: Remove build artifacts
+    desc: Remove build artifacts, including the chip and the example firmware
     preconditions: *cargo
-    status:
-      - test ! -d target
     cmds:
       - cargo clean
+      - task: chip:clean
+      - task: esp32c3:clean
