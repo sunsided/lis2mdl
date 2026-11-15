@@ -1,0 +1,25 @@
+[package]
+name = "lis2mdl-registers"
+description = "A typed map of the STMicroelectronics LIS2MDL magnetometer registers"
+categories = ["embedded", "hardware-support", "no-std"]
+keywords = ["embedded-hal", "lis2mdl", "magnetometer", "i2c", "registers"]
+readme = "README.md"
+version.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[features]
+defmt = ["dep:defmt"]
+
+[dependencies]
+bitfield-struct.workspace = true
+defmt = { workspace = true, optional = true }
+hardware-registers.workspace = true
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
