@@ -60,3 +60,18 @@ jobs:
         run: cargo test --workspace --doc --verbose ${{ join(matrix.features, ' ') }}
       - name: Run regular tests
         run: cargo test --workspace --tests --verbose ${{ join(matrix.features, ' ') }}
+
+  build-embedded:
+    name: Build for embedded targets
+    needs:
+      - lint
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        target: [ thumbv7em-none-eabihf, riscv32imc-unknown-none-elf ]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install target
+        run: rustup target add ${{ matrix.target }}
+      - name: Build
+        run: cargo build -p lis2mdl-registers -p lis2mdl --all-features --target ${{ matrix.target }}

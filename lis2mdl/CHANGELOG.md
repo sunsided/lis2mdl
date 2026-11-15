@@ -9,3 +9,9 @@ This project uses [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 - Blocking driver on embedded-hal 1.0 and async driver on embedded-hal-async (`async` feature).
 - Magnetic field, temperature and hard-iron offset access with unit conversions.
+- I²C and SPI interfaces, with I²C address auto-increment on multi-byte transfers.
+- Configuration helpers for low-power mode, low-pass filter, offset cancellation,
+  block data update, soft reset and reboot.
+- Threshold interrupt support.
+- Self-test following ST's reference procedure and the datasheet limits.
+- Tracking of the `BLE` byte order bit.

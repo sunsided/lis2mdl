@@ -1,12 +1,13 @@
 //! Decoding of the output and offset registers.
 
 use lis2mdl_registers::{
-    MILLIGAUSS_PER_LSB, RegisterAddress, TEMPERATURE_LSB_PER_CELSIUS, TEMPERATURE_OFFSET_CELSIUS,
+    MILLIGAUSS_PER_LSB, TEMPERATURE_LSB_PER_CELSIUS, TEMPERATURE_OFFSET_CELSIUS,
 };
 
 /// A magnetic field vector in raw sensor units (1.5 mG per LSB).
 ///
-/// Used for both the output registers and the hard-iron offset registers.
+/// Used for both the output registers and the hard-iron offset registers. `BLE` swaps the
+/// bytes of the output registers only; the offset registers always have the low byte first.
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MagneticField {
@@ -19,12 +20,6 @@ pub struct MagneticField {
 }
 
 impl MagneticField {
-    /// The first output register of the burst read.
-    pub(crate) const OUTPUT_START: RegisterAddress = RegisterAddress::OUTX_L_REG;
-
-    /// The first hard-iron offset register.
-    pub(crate) const OFFSET_START: RegisterAddress = RegisterAddress::OFFSET_X_REG_L;
-
     /// The number of bytes of a vector (three little-endian 16-bit values).
     pub const LEN: usize = 6;
 
@@ -45,8 +40,8 @@ impl MagneticField {
         Self::new(lsb(x), lsb(y), lsb(z))
     }
 
-    /// Decodes registers `X_L` through `Z_H` (little-endian, `BLE = 0`).
-    pub const fn from_bytes(bytes: &[u8; Self::LEN]) -> Self {
+    /// Decodes registers `X_L` through `Z_H` with the low byte first (`BLE = 0`).
+    pub const fn from_le_bytes(bytes: &[u8; Self::LEN]) -> Self {
         Self {
             x: i16::from_le_bytes([bytes[0], bytes[1]]),
             y: i16::from_le_bytes([bytes[2], bytes[3]]),
@@ -54,8 +49,26 @@ impl MagneticField {
         }
     }
 
-    /// Encodes the vector for registers `X_L` through `Z_H` (little-endian).
-    pub const fn to_bytes(&self) -> [u8; Self::LEN] {
+    /// Decodes registers `X_L` through `Z_H` with swapped bytes (`BLE = 1`).
+    pub const fn from_be_bytes(bytes: &[u8; Self::LEN]) -> Self {
+        Self {
+            x: i16::from_be_bytes([bytes[0], bytes[1]]),
+            y: i16::from_be_bytes([bytes[2], bytes[3]]),
+            z: i16::from_be_bytes([bytes[4], bytes[5]]),
+        }
+    }
+
+    /// Decodes the output registers in the byte order selected by `swapped` (`BLE`).
+    pub(crate) const fn from_output(bytes: &[u8; Self::LEN], swapped: bool) -> Self {
+        if swapped {
+            Self::from_be_bytes(bytes)
+        } else {
+            Self::from_le_bytes(bytes)
+        }
+    }
+
+    /// Encodes the vector for registers `X_L` through `Z_H` with the low byte first.
+    pub const fn to_le_bytes(&self) -> [u8; Self::LEN] {
         let [x0, x1] = self.x.to_le_bytes();
         let [y0, y1] = self.y.to_le_bytes();
         let [z0, z1] = self.z.to_le_bytes();
@@ -75,7 +88,8 @@ impl MagneticField {
 
 /// A die temperature reading in raw sensor units (8 LSB per °C, `0` at 25 °C).
 ///
-/// The temperature sensor is meant for compensation, not as an absolute thermometer.
+/// The sensor has 12-bit resolution and is meant for compensation, not as an absolute
+/// thermometer.
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct Temperature {
@@ -84,16 +98,30 @@ pub struct Temperature {
 }
 
 impl Temperature {
-    /// The first register of the burst read.
-    pub(crate) const START: RegisterAddress = RegisterAddress::TEMP_OUT_L_REG;
-
     /// The number of bytes in the burst read.
     pub const LEN: usize = 2;
 
-    /// Decodes registers `TEMP_OUT_L_REG` and `TEMP_OUT_H_REG`.
-    pub const fn from_bytes(bytes: &[u8; Self::LEN]) -> Self {
+    /// Decodes registers `TEMP_OUT_L_REG` and `TEMP_OUT_H_REG` with the low byte first
+    /// (`BLE = 0`).
+    pub const fn from_le_bytes(bytes: &[u8; Self::LEN]) -> Self {
         Self {
             raw: i16::from_le_bytes(*bytes),
+        }
+    }
+
+    /// Decodes registers `TEMP_OUT_L_REG` and `TEMP_OUT_H_REG` with swapped bytes (`BLE = 1`).
+    pub const fn from_be_bytes(bytes: &[u8; Self::LEN]) -> Self {
+        Self {
+            raw: i16::from_be_bytes(*bytes),
+        }
+    }
+
+    /// Decodes the registers in the byte order selected by `swapped` (`BLE`).
+    pub(crate) const fn from_output(bytes: &[u8; Self::LEN], swapped: bool) -> Self {
+        if swapped {
+            Self::from_be_bytes(bytes)
+        } else {
+            Self::from_le_bytes(bytes)
         }
     }
 
@@ -109,9 +137,13 @@ mod tests {
 
     #[test]
     fn field_roundtrip_and_units() {
-        let field = MagneticField::from_bytes(&[0x64, 0x00, 0x38, 0xFF, 0x2C, 0x01]);
+        let field = MagneticField::from_le_bytes(&[0x64, 0x00, 0x38, 0xFF, 0x2C, 0x01]);
         assert_eq!(field, MagneticField::new(100, -200, 300));
-        assert_eq!(field.to_bytes(), [0x64, 0x00, 0x38, 0xFF, 0x2C, 0x01]);
+        assert_eq!(field.to_le_bytes(), [0x64, 0x00, 0x38, 0xFF, 0x2C, 0x01]);
+        assert_eq!(
+            MagneticField::from_be_bytes(&[0x00, 0x64, 0xFF, 0x38, 0x01, 0x2C]),
+            field
+        );
         assert_eq!(field.milligauss(), [150.0, -300.0, 450.0]);
         assert_eq!(field.microtesla(), [15.0, -30.0, 45.0]);
     }
@@ -126,7 +158,8 @@ mod tests {
 
     #[test]
     fn temperature() {
-        assert_eq!(Temperature::from_bytes(&[0x00, 0x00]).celsius(), 25.0);
-        assert_eq!(Temperature::from_bytes(&[0xF0, 0xFF]).celsius(), 23.0);
+        assert_eq!(Temperature::from_le_bytes(&[0x00, 0x00]).celsius(), 25.0);
+        assert_eq!(Temperature::from_le_bytes(&[0xF0, 0xFF]).celsius(), 23.0);
+        assert_eq!(Temperature::from_be_bytes(&[0xFF, 0xF0]).celsius(), 23.0);
     }
 }
