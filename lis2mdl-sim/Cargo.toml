@@ -21,5 +21,3 @@ lis2mdl-registers.workspace = true
 
 [dev-dependencies]
 embassy-futures.workspace = true
-embedded-hal.workspace = true
-embedded-hal-async.workspace = true

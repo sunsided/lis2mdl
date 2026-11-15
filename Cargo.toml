@@ -22,7 +22,7 @@ embedded-hal = "1.0.0"
 embedded-hal-async = "1.0.0"
 embassy-futures = "0.1.2"
 # shortcut: git dependency until fake-bus is on crates.io; switch to a version then.
-fake-bus = { git = "https://github.com/sunsided/fake-bus", rev = "6bb6d1f" }
+fake-bus = { git = "https://github.com/sunsided/fake-bus", rev = "82001de" }
 hardware-registers = "0.3.0"
 lis2mdl-registers = { path = "lis2mdl-registers", version = "0.1.0" }
 lis2mdl-sim = { path = "lis2mdl-sim" }

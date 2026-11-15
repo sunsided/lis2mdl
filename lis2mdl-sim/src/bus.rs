@@ -50,15 +50,8 @@ impl SpiTarget for Lis2mdlModel {
 
 impl Clock for Lis2mdlModel {
     fn advance_ns(&mut self, ns: u64) {
-        // The model works in whole microseconds; carry the rest to the next call.
-        let total = self.pending_ns + ns;
-        self.pending_ns = total % 1_000;
-        let mut us = total / 1_000;
-
-        while us > 0 {
-            let step = us.min(u64::from(u32::MAX));
-            self.tick(step as u32);
-            us -= step;
+        for us in self.ticks.advance_u32(ns) {
+            self.tick(us);
         }
     }
 }
@@ -66,9 +59,9 @@ impl Clock for Lis2mdlModel {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use embedded_hal::delay::DelayNs;
-    use embedded_hal::i2c::{ErrorKind, I2c, NoAcknowledgeSource, Operation};
-    use embedded_hal::spi::SpiDevice;
+    use fake_bus::embedded_hal::delay::DelayNs;
+    use fake_bus::embedded_hal::i2c::{ErrorKind, I2c, NoAcknowledgeSource, Operation};
+    use fake_bus::embedded_hal::spi::SpiDevice;
 
     #[test]
     fn i2c_write_read() {
@@ -109,7 +102,7 @@ mod tests {
         let model = RefCell::new(Lis2mdlModel::new());
         let mut bus = FakeI2c::new(&model);
         let mut id = [0];
-        embassy_futures::block_on(embedded_hal_async::i2c::I2c::write_read(
+        embassy_futures::block_on(fake_bus::embedded_hal_async::i2c::I2c::write_read(
             &mut bus,
             0x1E,
             &[0x4F],
@@ -130,7 +123,7 @@ mod tests {
 
     #[test]
     fn spi_write_then_read_burst() {
-        use embedded_hal::spi::Operation;
+        use fake_bus::embedded_hal::spi::Operation;
         let model = RefCell::new(Lis2mdlModel::new());
         let mut spi = FakeSpi::new(&model);
         spi.write(&[0x45, 1, 2, 3, 4, 5, 6]).unwrap();
