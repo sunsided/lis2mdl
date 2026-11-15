@@ -1,0 +1,11 @@
+# cargo-release configuration: https://github.com/crate-ci/cargo-release/blob/master/docs/reference.md
+#
+# The published crates share the workspace version and are released together with one
+# commit and one `vX.Y.Z` tag. Pushing the tag creates the GitHub Release
+# (.github/workflows/release.yml).
+allow-branch = ["main"]
+shared-version = true
+consolidate-commits = true
+pre-release-commit-message = "Release {{version}}"
+tag-message = "Release {{version}}"
+tag-name = "v{{version}}"

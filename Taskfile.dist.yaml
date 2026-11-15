@@ -143,6 +143,25 @@ tasks:
     cmds:
       - wokwi-cli . --scenario scenarios/compass.yaml --timeout 30000
 
+  release:dry-run:
+    desc: Show what a release would do (LEVEL=patch|minor|major or an exact version)
+    requires:
+      vars: [LEVEL]
+    preconditions: &cargo-release
+      - sh: command -v cargo-release
+        msg: "cargo-release not found — cargo install cargo-release"
+    cmds:
+      - cargo release {{.LEVEL}} --workspace
+
+  release:
+    desc: Release, publish to crates.io and push the vX.Y.Z tag, which creates the GitHub Release
+    requires:
+      vars: [LEVEL]
+    preconditions: *cargo-release
+    prompt: "This publishes the crates to crates.io and pushes a release tag. Continue?"
+    cmds:
+      - cargo release {{.LEVEL}} --workspace --execute
+
   clean:
     desc: Remove build artifacts
     preconditions: *cargo
