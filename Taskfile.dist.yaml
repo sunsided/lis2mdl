@@ -107,6 +107,42 @@ tasks:
       - task: test:matrix
       - task: build:embedded
 
+  wokwi:chip:
+    desc: Build the Wokwi custom chip (sim/wokwi-chip/lis2mdl.chip.wasm)
+    preconditions: *cargo
+    dir: sim/wokwi-chip
+    sources: [Cargo.toml, src/**/*.rs, ../../lis2mdl-sim/src/**/*.rs, ../../lis2mdl-registers/src/**/*.rs]
+    generates: [lis2mdl.chip.wasm]
+    cmds:
+      - ./build.sh
+
+  wokwi:build:
+    desc: Build the Wokwi chip and the ESP32-C3 example firmware
+    preconditions: *cargo
+    deps: [wokwi:chip]
+    dir: examples/esp32c3
+    cmds:
+      - cargo build --release
+
+  wokwi:lint:
+    desc: Check formatting and run clippy on the Wokwi chip and the example firmware
+    preconditions: *cargo
+    cmds:
+      - for: [sim/wokwi-chip, examples/esp32c3]
+        cmd: cd {{.ITEM}} && cargo fmt --check && cargo clippy --release -- -D warnings
+
+  wokwi:test:
+    desc: Run the ESP32-C3 example against the Wokwi chip with the automation scenario
+    deps: [wokwi:build]
+    dir: examples/esp32c3
+    preconditions:
+      - sh: command -v wokwi-cli
+        msg: "wokwi-cli not found — see https://docs.wokwi.com/wokwi-ci/cli-installation"
+      - sh: test -n "$WOKWI_CLI_TOKEN"
+        msg: "WOKWI_CLI_TOKEN not set — get a token at https://wokwi.com/dashboard/ci"
+    cmds:
+      - wokwi-cli . --scenario scenarios/compass.yaml --timeout 30000
+
   clean:
     desc: Remove build artifacts
     preconditions: *cargo

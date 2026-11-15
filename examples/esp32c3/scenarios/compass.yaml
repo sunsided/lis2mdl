@@ -1,0 +1,66 @@
+name: Self-test, hard-iron offset, heading, temperature and threshold interrupt
+version: 1
+author: Markus Mayer
+
+steps:
+  - wait-serial: 'LIS2MDL ok who_am_i=0x40'
+  - wait-serial: 'self-test passed=true dx=150.0 dy=150.0 dz=150.0'
+  - wait-serial: 'running odr=50Hz threshold=1000mG'
+
+  # The firmware subtracts a 15 mG hard-iron offset on X.
+  - set-control:
+      part-id: mag1
+      control: fieldX
+      value: 315
+  - wait-serial: 'mag x=300.0 y=0.0 z=0.0 mG heading=0 temp=25.0C'
+
+  # East: the heading follows the field.
+  - set-control:
+      part-id: mag1
+      control: fieldX
+      value: 15
+  - set-control:
+      part-id: mag1
+      control: fieldY
+      value: 300
+  - wait-serial: 'mag x=0.0 y=300.0 z=0.0 mG heading=90 temp=25.0C'
+
+  # South.
+  - set-control:
+      part-id: mag1
+      control: fieldX
+      value: -285
+  - set-control:
+      part-id: mag1
+      control: fieldY
+      value: 0
+  - wait-serial: 'mag x=-300.0 y=0.0 z=0.0 mG heading=180 temp=25.0C'
+
+  # West.
+  - set-control:
+      part-id: mag1
+      control: fieldX
+      value: 15
+  - set-control:
+      part-id: mag1
+      control: fieldY
+      value: -300
+  - wait-serial: 'mag x=0.0 y=-300.0 z=0.0 mG heading=270 temp=25.0C'
+
+  - set-control:
+      part-id: mag1
+      control: temperature
+      value: 35
+  - wait-serial: 'temp=35.0C'
+
+  # Z above +1 gauss: P_TH_S_Z and INT.
+  - set-control:
+      part-id: mag1
+      control: fieldZ
+      value: 1500
+  - wait-serial: 'int src=0x21'
+  - set-control:
+      part-id: mag1
+      control: fieldZ
+      value: 0
+  - wait-serial: 'int clear'

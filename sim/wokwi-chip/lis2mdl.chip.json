@@ -1,0 +1,11 @@
+{
+  "name": "lis2mdl",
+  "author": "Markus Mayer",
+  "pins": ["VCC", "GND", "SDA", "SCL", "INT"],
+  "controls": [
+    { "id": "fieldX", "label": "Field X (mG)", "type": "range", "min": -2000, "max": 2000, "step": 15 },
+    { "id": "fieldY", "label": "Field Y (mG)", "type": "range", "min": -2000, "max": 2000, "step": 15 },
+    { "id": "fieldZ", "label": "Field Z (mG)", "type": "range", "min": -2000, "max": 2000, "step": 15 },
+    { "id": "temperature", "label": "Temperature (°C)", "type": "range", "min": -40, "max": 85, "step": 1 }
+  ]
+}

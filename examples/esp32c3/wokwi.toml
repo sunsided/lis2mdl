@@ -1,0 +1,8 @@
+[wokwi]
+version = 1
+elf = "target/riscv32imc-unknown-none-elf/release/lis2mdl-example-esp32c3"
+firmware = "target/riscv32imc-unknown-none-elf/release/lis2mdl-example-esp32c3"
+
+[[chip]]
+name = "lis2mdl"
+binary = "../../sim/wokwi-chip/lis2mdl.chip.wasm"
